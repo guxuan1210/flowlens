@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 199 89% 62%;
+    --primary-foreground: 222 47% 6%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 63% 40%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 18%;
+    --input: 217 33% 18%;
+    --ring: 199 89% 62%;
+    --radius: 0.5rem;
+
+    /* Agent accent colors */
+    --agent-market: 199 89% 62%;
+    --agent-sentiment: 255 92% 76%;
+    --agent-news: 160 84% 50%;
+    --agent-fundamentals: 38 92% 55%;
+    --agent-bull: 142 76% 45%;
+    --agent-bear: 0 84% 60%;
+    --agent-trader: 189 94% 55%;
+    --agent-risk-agg: 330 81% 60%;
+    --agent-risk-con: 217 91% 65%;
+    --agent-risk-neu: 215 20% 65%;
+    --agent-pm: 199 89% 62%;
+
+    /* Rating colors */
+    --rating-buy: 142 76% 45%;
+    --rating-overweight: 82 76% 45%;
+    --rating-hold: 48 96% 53%;
+    --rating-underweight: 27 96% 55%;
+    --rating-sell: 0 84% 60%;
+  }
+
+  .dark {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 199 89% 62%;
+    --primary-foreground: 222 47% 6%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 63% 40%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 18%;
+    --input: 217 33% 18%;
+    --ring: 199 89% 62%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Agent card pulse animation */
+@keyframes agent-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
+  50%      { box-shadow: 0 0 0 8px rgba(56, 189, 248, 0); }
+}
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(222 47% 8%);
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(217 33% 20%);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(217 33% 28%);
+}
