@@ -3,8 +3,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 interface ReturnsDatum {
   ticker: string
   date: string
-  raw_return?: number
-  alpha_return?: number
+  raw_return?: number | string
+  alpha_return?: number | string
   rating?: string
 }
 
@@ -20,11 +20,15 @@ export function ReturnsChart({ data }: ReturnsChartProps) {
   const chartData = data
     .filter((d) => d.raw_return !== undefined)
     .slice(-10)
-    .map((d) => ({
-      name: `${d.ticker} ${d.date?.slice(5)}`,
-      return: parseFloat((d.raw_return! * 100).toFixed(1)),
-      alpha: d.alpha_return ? parseFloat((d.alpha_return * 100).toFixed(1)) : undefined,
-    }))
+    .map((d) => {
+      const raw = typeof d.raw_return === 'string' ? parseFloat(d.raw_return) : d.raw_return!
+      const alpha = d.alpha_return ? (typeof d.alpha_return === 'string' ? parseFloat(d.alpha_return) : d.alpha_return) : undefined
+      return {
+        name: `${d.ticker} ${d.date?.slice(5)}`,
+        return: parseFloat((raw * 100).toFixed(1)),
+        alpha: alpha ? parseFloat((alpha * 100).toFixed(1)) : undefined,
+      }
+    })
 
   if (chartData.length === 0) {
     return <div className="text-center py-8 text-slate-500 text-sm">No resolved returns available yet.</div>
