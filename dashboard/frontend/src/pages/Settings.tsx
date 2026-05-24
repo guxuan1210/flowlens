@@ -7,7 +7,7 @@ import * as Switch from '@radix-ui/react-switch'
 import { Save, RotateCcw, ChevronDown, Check } from 'lucide-react'
 
 const LANGUAGES = ['English', 'Chinese', 'Japanese', 'Korean', 'Spanish', 'Portuguese', 'French', 'German', 'Arabic', 'Russian', 'Hindi']
-const VENDORS = ['yfinance', 'alpha_vantage']
+const VENDORS = ['yfinance', 'alpha_vantage', 'akshare']
 
 function RadixSelect({ value, onValueChange, options, placeholder }: {
   value: string

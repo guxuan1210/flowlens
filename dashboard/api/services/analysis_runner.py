@@ -148,6 +148,16 @@ async def run_analysis_background(run_id: str, params: dict) -> None:
             final_state: dict = {}
             for c in trace:
                 final_state.update(c)
+
+            # Persist state to disk (same as TradingAgentsGraph._run_graph does).
+            graph.ticker = params["ticker"]
+            graph._log_state(str(params["date"]), final_state)
+            graph.memory_log.store_decision(
+                ticker=params["ticker"],
+                trade_date=str(params["date"]),
+                final_trade_decision=final_state.get("final_trade_decision", ""),
+            )
+
             decision = graph.process_signal(final_state.get("final_trade_decision", ""))
             rating = decision  # process_signal returns the rating string directly
 

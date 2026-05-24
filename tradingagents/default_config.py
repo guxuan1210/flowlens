@@ -88,11 +88,17 @@ DEFAULT_CONFIG = _apply_env_overrides({
     # Search queries used by get_global_news for macro headlines. Extend or
     # replace to broaden geographic / sector coverage.
     "global_news_queries": [
+        # International macro
         "Federal Reserve interest rates inflation",
         "S&P 500 earnings GDP economic outlook",
         "geopolitical risk trade war sanctions",
         "ECB Bank of England BOJ central bank policy",
         "oil commodities supply chain energy",
+        # Chinese domestic macro
+        "中国人民银行 货币政策 降准降息",
+        "A股 沪深300 经济数据 GDP",
+        "A股 行业板块 资金流向 主力资金",
+        "中国 产业政策 新能源 半导体 消费",
     ],
     # Data vendor configuration
     # Category-level configuration (default for all tools in category)
