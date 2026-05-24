@@ -17,6 +17,7 @@ _ENV_OVERRIDES = {
     "TRADINGAGENTS_MAX_RISK_ROUNDS":      "max_risk_discuss_rounds",
     "TRADINGAGENTS_CHECKPOINT_ENABLED":   "checkpoint_enabled",
     "TRADINGAGENTS_BENCHMARK_TICKER":     "benchmark_ticker",
+    "TRADINGAGENTS_TUSHARE_TOKEN":        "tushare_token",
 }
 
 
@@ -67,6 +68,9 @@ DEFAULT_CONFIG = _apply_env_overrides({
     # Checkpoint/resume: when True, LangGraph saves state after each node
     # so a crashed run can resume from the last successful step.
     "checkpoint_enabled": False,
+    # Tushare API token for A-share capital flow data (主力资金).
+    # Free registration at https://tushare.pro — 120 points/min for basic tier.
+    "tushare_token": None,
     # Output language for analyst reports and final decision
     # Internal agent debate stays in English for reasoning quality
     "output_language": "English",
