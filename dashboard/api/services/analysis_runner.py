@@ -40,13 +40,14 @@ ANALYST_REPORT_MAP = {
     "news": "news_report",
     "fundamentals": "fundamentals_report",
     "capital_flow": "capital_flow_report",
+    "manipulation": "manipulation_risk_report",
 }
 
 FIXED_AGENTS = [
     "Bull Researcher", "Bear Researcher", "Research Manager",
     "Trader",
     "Aggressive Analyst", "Neutral Analyst", "Conservative Analyst",
-    "Portfolio Manager",
+    "Portfolio Manager", "Manipulation Risk Analyzer",
 ]
 
 
@@ -357,8 +358,31 @@ def _handle_chunk(
                 asyncio.run_coroutine_threadsafe(
                     manager.send_pipeline_stage(run_id, "decision"), loop
                 )
+            # Transition to Manipulation Risk Analyzer
+            if agent_statuses.get("Manipulation Risk Analyzer") == "pending":
+                agent_statuses["Manipulation Risk Analyzer"] = "in_progress"
+                asyncio.run_coroutine_threadsafe(
+                    manager.send_agent_status(run_id, "Manipulation Risk Analyzer", "in_progress"), loop
+                )
 
-    # 7. Emit stats
+    # 7. Manipulation Risk Report
+    if chunk.get("manipulation_risk_report"):
+        content = chunk["manipulation_risk_report"]
+        if isinstance(content, str) and content.strip():
+            asyncio.run_coroutine_threadsafe(
+                manager.send_report_chunk(run_id, "manipulation_risk_report", content), loop
+            )
+            asyncio.run_coroutine_threadsafe(
+                manager.send_agent_status(run_id, "Manipulation Risk Analyzer", "completed"), loop
+            )
+            agent_statuses["Manipulation Risk Analyzer"] = "completed"
+            if not agent_statuses.get("_pipeline_manipulation_sent"):
+                agent_statuses["_pipeline_manipulation_sent"] = True
+                asyncio.run_coroutine_threadsafe(
+                    manager.send_pipeline_stage(run_id, "manipulation"), loop
+                )
+
+    # 8. Emit stats
     stats = stats_handler.get_stats()
     elapsed = time.time() - start_time
     asyncio.run_coroutine_threadsafe(
