@@ -11,6 +11,7 @@ from .y_finance import (
     get_insider_transactions as get_yfinance_insider_transactions,
 )
 from .yfinance_news import get_news_yfinance, get_global_news_yfinance
+from .akshare_moneyflow import get_moneyflow, get_sector_fund_flow
 from .alpha_vantage import (
     get_stock as get_alpha_vantage_stock,
     get_indicator as get_alpha_vantage_indicator,
@@ -23,6 +24,7 @@ from .alpha_vantage import (
     get_global_news as get_alpha_vantage_global_news,
 )
 from .alpha_vantage_common import AlphaVantageRateLimitError
+from yfinance.exceptions import YFRateLimitError
 
 # Configuration and routing logic
 from .config import get_config
@@ -57,12 +59,20 @@ TOOLS_CATEGORIES = {
             "get_global_news",
             "get_insider_transactions",
         ]
+    },
+    "capital_flow_data": {
+        "description": "Major capital flow data (主力资金流向)",
+        "tools": [
+            "get_capital_flow",
+            "get_sector_flow",
+        ]
     }
 }
 
 VENDOR_LIST = [
     "yfinance",
     "alpha_vantage",
+    "akshare",
 ]
 
 # Mapping of methods to their vendor-specific implementations
@@ -106,6 +116,13 @@ VENDOR_METHODS = {
     "get_insider_transactions": {
         "alpha_vantage": get_alpha_vantage_insider_transactions,
         "yfinance": get_yfinance_insider_transactions,
+    },
+    # capital_flow_data
+    "get_capital_flow": {
+        "akshare": [get_moneyflow],
+    },
+    "get_sector_flow": {
+        "akshare": [get_sector_fund_flow],
     },
 }
 
@@ -156,7 +173,7 @@ def route_to_vendor(method: str, *args, **kwargs):
 
         try:
             return impl_func(*args, **kwargs)
-        except AlphaVantageRateLimitError:
-            continue  # Only rate limits trigger fallback
+        except (AlphaVantageRateLimitError, YFRateLimitError):
+            continue  # Rate limits trigger fallback
 
     raise RuntimeError(f"No available vendor for '{method}'")

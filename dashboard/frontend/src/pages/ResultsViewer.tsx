@@ -13,6 +13,7 @@ interface AnalysisState {
   sentiment_report?: string
   news_report?: string
   fundamentals_report?: string
+  capital_flow_report?: string
   investment_debate_state?: {
     bull_history?: string
     bear_history?: string
@@ -91,7 +92,8 @@ export function ResultsViewer() {
             {state.sentiment_report && <Section title="Sentiment Analysis" content={state.sentiment_report} />}
             {state.news_report && <Section title="News Analysis" content={state.news_report} />}
             {state.fundamentals_report && <Section title="Fundamentals Analysis" content={state.fundamentals_report} />}
-            {!state.market_report && !state.sentiment_report && !state.news_report && !state.fundamentals_report && (
+            {state.capital_flow_report && <Section title="Capital Flow Analysis" content={state.capital_flow_report} />}
+            {!state.market_report && !state.sentiment_report && !state.news_report && !state.fundamentals_report && !state.capital_flow_report && (
               <p className="text-slate-400 text-sm">No analyst reports available.</p>
             )}
           </Tabs.Content>

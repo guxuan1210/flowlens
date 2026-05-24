@@ -97,6 +97,7 @@ DEFAULT_CONFIG = _apply_env_overrides({
         "technical_indicators": "yfinance",  # Options: alpha_vantage, yfinance
         "fundamental_data": "yfinance",      # Options: alpha_vantage, yfinance
         "news_data": "yfinance",             # Options: alpha_vantage, yfinance
+        "capital_flow_data": "akshare",      # Options: akshare
     },
     # Tool-level configuration (takes precedence over category-level)
     "tool_vendors": {

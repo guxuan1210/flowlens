@@ -17,6 +17,7 @@ const ANALYST_OPTIONS = [
   { key: 'social', label: 'Sentiment Analyst', desc: 'News, StockTwits, Reddit sentiment' },
   { key: 'news', label: 'News Analyst', desc: 'Global news, macro indicators' },
   { key: 'fundamentals', label: 'Fundamentals Analyst', desc: 'Financials, balance sheets' },
+  { key: 'capital_flow', label: 'Capital Flow Analyst', desc: '主力资金流向, institutional flow' },
 ]
 
 const DEPTH_OPTIONS = [
@@ -28,6 +29,7 @@ const DEPTH_OPTIONS = [
 const AGENT_STAGES: Record<string, string> = {
   'Market Analyst': 'analysts', 'Sentiment Analyst': 'analysts',
   'News Analyst': 'analysts', 'Fundamentals Analyst': 'analysts',
+  'Capital Flow Analyst': 'analysts',
   'Bull Researcher': 'research', 'Bear Researcher': 'research',
   'Research Manager': 'research',
   Trader: 'trader',
@@ -39,6 +41,7 @@ const AGENT_STAGES: Record<string, string> = {
 const AGENT_COLORS: Record<string, string> = {
   'Market Analyst': 'sky', 'Sentiment Analyst': 'violet',
   'News Analyst': 'emerald', 'Fundamentals Analyst': 'amber',
+  'Capital Flow Analyst': 'orange',
   'Bull Researcher': 'green', 'Bear Researcher': 'red',
   'Research Manager': 'sky', Trader: 'cyan',
   'Aggressive Analyst': 'pink', 'Conservative Analyst': 'blue',
@@ -50,6 +53,7 @@ function reportSectionToAgentName(section: string): string {
   const map: Record<string, string> = {
     market_report: 'Market Analyst', sentiment_report: 'Sentiment Analyst',
     news_report: 'News Analyst', fundamentals_report: 'Fundamentals Analyst',
+    capital_flow_report: 'Capital Flow Analyst',
     investment_plan: 'Research Manager',
     trader_investment_plan: 'Trader',
     final_trade_decision: 'Portfolio Manager',
@@ -194,6 +198,7 @@ export function RunAnalysis() {
     if (analysts.includes('social')) expectedAgents.push({ key: 'sentiment', name: 'Sentiment Analyst', stage: 'analysts' })
     if (analysts.includes('news')) expectedAgents.push({ key: 'news', name: 'News Analyst', stage: 'analysts' })
     if (analysts.includes('fundamentals')) expectedAgents.push({ key: 'fundamentals', name: 'Fundamentals Analyst', stage: 'analysts' })
+    if (analysts.includes('capital_flow')) expectedAgents.push({ key: 'capital_flow', name: 'Capital Flow Analyst', stage: 'analysts' })
     expectedAgents.push(
       { key: 'bull', name: 'Bull Researcher', stage: 'research' },
       { key: 'bear', name: 'Bear Researcher', stage: 'research' },
@@ -208,6 +213,7 @@ export function RunAnalysis() {
     const reportToAgent: Record<string, string> = {
       market_report: 'Market Analyst', sentiment_report: 'Sentiment Analyst',
       news_report: 'News Analyst', fundamentals_report: 'Fundamentals Analyst',
+      capital_flow_report: 'Capital Flow Analyst',
       investment_plan: 'Research Manager',
       trader_investment_plan: 'Trader',
       final_trade_decision: 'Portfolio Manager',
@@ -315,8 +321,12 @@ export function RunAnalysis() {
 
             <div>
               <label className="text-sm font-medium block mb-1">Output Language</label>
-              <input value={language} onChange={(e) => setLanguage(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-700 rounded-md text-sm bg-slate-950 focus:border-sky-500 focus:outline-none" />
+              <select value={language} onChange={(e) => setLanguage(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-700 rounded-md text-sm bg-slate-950 focus:border-sky-500 focus:outline-none">
+                {['English', 'Chinese', 'Japanese', 'Korean', 'Spanish', 'Portuguese', 'French', 'German', 'Arabic', 'Russian', 'Hindi'].map((l) => (
+                  <option key={l} value={l}>{l}</option>
+                ))}
+              </select>
             </div>
 
             <button onClick={startAnalysis} disabled={analysts.length === 0}

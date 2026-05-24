@@ -24,13 +24,14 @@ from dashboard.api.websocket_manager import manager
 
 _active_runs: dict[str, dict[str, Any]] = {}
 
-ANALYST_ORDER = ["market", "social", "news", "fundamentals"]
+ANALYST_ORDER = ["market", "social", "news", "fundamentals", "capital_flow"]
 
 ANALYST_AGENT_NAMES = {
     "market": "Market Analyst",
     "social": "Sentiment Analyst",
     "news": "News Analyst",
     "fundamentals": "Fundamentals Analyst",
+    "capital_flow": "Capital Flow Analyst",
 }
 
 ANALYST_REPORT_MAP = {
@@ -38,6 +39,7 @@ ANALYST_REPORT_MAP = {
     "social": "sentiment_report",
     "news": "news_report",
     "fundamentals": "fundamentals_report",
+    "capital_flow": "capital_flow_report",
 }
 
 FIXED_AGENTS = [
