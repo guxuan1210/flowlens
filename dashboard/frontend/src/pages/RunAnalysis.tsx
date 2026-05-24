@@ -36,6 +36,7 @@ const AGENT_STAGES: Record<string, string> = {
   'Aggressive Analyst': 'risk', 'Conservative Analyst': 'risk',
   'Neutral Analyst': 'risk',
   'Portfolio Manager': 'decision',
+  'Manipulation Risk Analyzer': 'manipulation',
 }
 
 const AGENT_COLORS: Record<string, string> = {
@@ -47,6 +48,7 @@ const AGENT_COLORS: Record<string, string> = {
   'Aggressive Analyst': 'pink', 'Conservative Analyst': 'blue',
   'Neutral Analyst': 'slate',
   'Portfolio Manager': 'sky',
+  'Manipulation Risk Analyzer': 'red',
 }
 
 function reportSectionToAgentName(section: string): string {
@@ -57,6 +59,7 @@ function reportSectionToAgentName(section: string): string {
     investment_plan: 'Research Manager',
     trader_investment_plan: 'Trader',
     final_trade_decision: 'Portfolio Manager',
+    manipulation_risk_report: 'Manipulation Risk Analyzer',
   }
   return map[section] || section
 }
@@ -190,7 +193,7 @@ export function RunAnalysis() {
     const result: {
       key: string; name: string; status: AgentStatus;
       content: string | null; color: string;
-      stage: 'analysts' | 'research' | 'trader' | 'risk' | 'decision'
+      stage: 'analysts' | 'research' | 'trader' | 'risk' | 'decision' | 'manipulation'
     }[] = []
 
     const expectedAgents: { key: string; name: string; stage: string }[] = []
@@ -208,6 +211,7 @@ export function RunAnalysis() {
       { key: 'con', name: 'Conservative Analyst', stage: 'risk' },
       { key: 'neu', name: 'Neutral Analyst', stage: 'risk' },
       { key: 'pm', name: 'Portfolio Manager', stage: 'decision' },
+      { key: 'manipulation_risk', name: 'Manipulation Risk Analyzer', stage: 'manipulation' },
     )
 
     const reportToAgent: Record<string, string> = {
@@ -217,6 +221,7 @@ export function RunAnalysis() {
       investment_plan: 'Research Manager',
       trader_investment_plan: 'Trader',
       final_trade_decision: 'Portfolio Manager',
+      manipulation_risk_report: 'Manipulation Risk Analyzer',
     }
 
     expectedAgents.forEach(({ key, name, stage }) => {
@@ -231,7 +236,7 @@ export function RunAnalysis() {
       result.push({
         key, name, status: status as AgentStatus,
         content, color: AGENT_COLORS[name] || 'slate',
-        stage: stage as 'analysts' | 'research' | 'trader' | 'risk' | 'decision',
+        stage: stage as 'analysts' | 'research' | 'trader' | 'risk' | 'decision' | 'manipulation',
       })
     })
 

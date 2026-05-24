@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils'
 import { CheckCircle2, Loader2 } from 'lucide-react'
 
-type PipelineStage = 'analysts' | 'research' | 'trader' | 'risk' | 'decision'
+type PipelineStage = 'analysts' | 'research' | 'trader' | 'risk' | 'decision' | 'manipulation'
 
 const STAGES: { key: PipelineStage; label: string }[] = [
   { key: 'analysts', label: 'Analysts' },
@@ -9,6 +9,7 @@ const STAGES: { key: PipelineStage; label: string }[] = [
   { key: 'trader', label: 'Trader' },
   { key: 'risk', label: 'Risk' },
   { key: 'decision', label: 'Decision' },
+  { key: 'manipulation', label: 'Risk Check' },
 ]
 
 interface PipelineProgressProps {

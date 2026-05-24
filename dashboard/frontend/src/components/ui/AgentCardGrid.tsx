@@ -9,7 +9,7 @@ interface CardAgent {
   toolCalls?: number
   elapsed?: number
   color: string
-  stage: 'analysts' | 'research' | 'trader' | 'risk' | 'decision'
+  stage: 'analysts' | 'research' | 'trader' | 'risk' | 'decision' | 'manipulation'
 }
 
 interface AgentCardGridProps {
@@ -22,10 +22,11 @@ const STAGE_LABELS: Record<string, string> = {
   trader: 'III. Trader',
   risk: 'IV. Risk Management',
   decision: 'V. Portfolio Manager',
+  manipulation: 'VI. Manipulation Risk',
 }
 
 export function AgentCardGrid({ agents }: AgentCardGridProps) {
-  const stages = ['analysts', 'research', 'trader', 'risk', 'decision'] as const
+  const stages = ['analysts', 'research', 'trader', 'risk', 'decision', 'manipulation'] as const
 
   return (
     <div className="space-y-6">

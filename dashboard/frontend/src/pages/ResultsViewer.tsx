@@ -14,6 +14,7 @@ interface AnalysisState {
   news_report?: string
   fundamentals_report?: string
   capital_flow_report?: string
+  manipulation_risk_report?: string
   investment_debate_state?: {
     bull_history?: string
     bear_history?: string
@@ -35,6 +36,7 @@ const TABS = [
   { key: 'trader', label: 'Trading Plan' },
   { key: 'risk', label: 'Risk Analysis' },
   { key: 'decision', label: 'Final Decision' },
+  { key: 'manipulation', label: 'Manipulation Risk' },
 ]
 
 export function ResultsViewer() {
@@ -118,6 +120,10 @@ export function ResultsViewer() {
 
           <Tabs.Content value="decision">
             <Section title="Portfolio Manager Final Decision" content={decision || 'No final decision recorded.'} />
+          </Tabs.Content>
+
+          <Tabs.Content value="manipulation">
+            <Section title="Manipulation Risk Assessment" content={state.manipulation_risk_report || 'No manipulation risk assessment available.'} />
           </Tabs.Content>
         </div>
       </Tabs.Root>
