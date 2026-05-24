@@ -12,6 +12,7 @@ def create_bull_researcher(llm):
         sentiment_report = state["sentiment_report"]
         news_report = state["news_report"]
         fundamentals_report = state["fundamentals_report"]
+        capital_flow_report = state.get("capital_flow_report", "")
         asset_type = state.get("asset_type", "stock")
         target_label = "stock" if asset_type == "stock" else "asset"
         fundamentals_label = (
@@ -34,8 +35,11 @@ Market research report: {market_research_report}
 Social media sentiment report: {sentiment_report}
 Latest world affairs news: {news_report}
 {fundamentals_label}: {fundamentals_report}
+Capital flow report (主力资金流向): {capital_flow_report}
 Conversation history of the debate: {history}
 Last bear argument: {current_response}
+
+**Capital Flow Context (主力资金):** When constructing your bull argument, explicitly consider the capital_flow_report. If capital flow shows institutional outflow (主力流出) that contradicts your bullish thesis, acknowledge it honestly and explain why your bull case might still hold despite institutional selling. If capital flow shows institutional inflow (主力流入), use it as supporting evidence that smart money agrees with your bullish view. Pay attention to order-size breakdown: 超大单/大单 inflow supports your bull case strongly; 小单-driven inflow may indicate retail enthusiasm without institutional backing. Never ignore capital flow data — it is a critical signal that can validate or undermine your argument.
 Use this information to deliver a compelling bull argument, refute the bear's concerns, and engage in a dynamic debate that demonstrates the strengths of the bull position.
 """ + get_language_instruction()
 
