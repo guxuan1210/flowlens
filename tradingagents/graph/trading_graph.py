@@ -402,6 +402,7 @@ class TradingAgentsGraph:
             "news_report": final_state["news_report"],
             "fundamentals_report": final_state["fundamentals_report"],
             "capital_flow_report": final_state["capital_flow_report"],
+            "manipulation_risk_report": final_state.get("manipulation_risk_report", ""),
             "investment_debate_state": {
                 "bull_history": final_state["investment_debate_state"]["bull_history"],
                 "bear_history": final_state["investment_debate_state"]["bear_history"],

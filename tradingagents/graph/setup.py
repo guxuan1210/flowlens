@@ -65,6 +65,7 @@ class GraphSetup:
         neutral_analyst = create_neutral_debator(self.quick_thinking_llm)
         conservative_analyst = create_conservative_debator(self.quick_thinking_llm)
         portfolio_manager_node = create_portfolio_manager(self.deep_thinking_llm)
+        manipulation_risk_node = create_manipulation_risk_analyzer(self.deep_thinking_llm)
 
         # Create workflow
         workflow = StateGraph(AgentState)
@@ -84,6 +85,7 @@ class GraphSetup:
         workflow.add_node("Neutral Analyst", neutral_analyst)
         workflow.add_node("Conservative Analyst", conservative_analyst)
         workflow.add_node("Portfolio Manager", portfolio_manager_node)
+        workflow.add_node("Manipulation Risk Analyzer", manipulation_risk_node)
 
         # Define edges
         # Start with the first analyst
@@ -153,6 +155,7 @@ class GraphSetup:
             },
         )
 
-        workflow.add_edge("Portfolio Manager", END)
+        workflow.add_edge("Portfolio Manager", "Manipulation Risk Analyzer")
+        workflow.add_edge("Manipulation Risk Analyzer", END)
 
         return workflow

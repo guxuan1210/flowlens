@@ -58,6 +58,7 @@ class AgentState(MessagesState):
     ]
     fundamentals_report: Annotated[str, "Report from the Fundamentals Researcher"]
     capital_flow_report: Annotated[str, "Report from the Capital Flow Analyst"]
+    manipulation_risk_report: Annotated[str, "Cross-reference manipulation risk assessment report"]
 
     # researcher team discussion step
     investment_debate_state: Annotated[
