@@ -49,6 +49,15 @@ Volume-Based Indicators:
 
 - Select indicators that provide diverse and complementary information. Avoid redundancy (e.g., do not select both rsi and stochrsi). Also briefly explain why they are suitable for the given market context. When you tool call, please use the exact name of the indicators provided above as they are defined parameters, otherwise your call will fail. Please make sure to call get_stock_data first to retrieve the CSV that is needed to generate indicators. Then use get_indicators with the specific indicator names. Write a very detailed and nuanced report of the trends you observe. Provide specific, actionable insights with supporting evidence to help traders make informed decisions."""
             + """ Make sure to append a Markdown table at the end of the report to organize key points in the report, organized and easy to read."""
+            + """\n\n**主力资金交叉验证 (Capital Flow Cross-Validation):**\n"""
+            """After completing your technical analysis, produce a cross-validation """
+            """section comparing your technical signals against capital flow data:\n"""
+            """- Technical bullish + 主力流出 → potential **拉高出货 (distribution trap)**\n"""
+            """- Technical bearish + 主力流入 → potential **打压吸筹 (accumulation)**\n"""
+            """- Price breakout + 主力中性/流出 → potential **假突破 (false breakout)**\n"""
+            """Add a '**主力资金交叉验证**' section with this table:\n"""
+            """| 技术信号 | 方向 | 主力资金方向 | 一致性 | 陷坑风险 |\n"""
+            """|----------|------|-------------|--------|----------|\n"""
             + get_language_instruction()
         )
 

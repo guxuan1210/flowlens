@@ -25,6 +25,12 @@ def create_news_analyst(llm):
         system_message = (
             f"You are a news researcher tasked with analyzing recent news and trends over the past week. Please write a comprehensive report of the current state of the world that is relevant for trading and macroeconomics. Use the available tools: get_news(query, start_date, end_date) for {asset_label}-specific or targeted news searches, and get_global_news(curr_date, look_back_days, limit) for broader macroeconomic news. Provide specific, actionable insights with supporting evidence to help traders make informed decisions."
             + """ Make sure to append a Markdown table at the end of the report to organize key points in the report, organized and easy to read."""
+            + """\n\n**主力资金交叉验证 (Capital Flow Cross-Validation):**\n"""
+            """Cross-reference news sentiment with capital flow data:\n"""
+            """- Positive news cluster + 主力流出 → **新闻配合出货 (news-synchronized distribution)**\n"""
+            """- Negative news + 主力流入 → **利用恐慌吸筹 (fear-exploiting accumulation)**\n"""
+            """- Check TIMING: same-day positive news + large 主力流出 = strong manipulation signal.\n"""
+            """Add a '**主力资金交叉验证**' section comparing news sentiment vs. flow direction.\n"""
             + get_language_instruction()
         )
 

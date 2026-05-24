@@ -55,6 +55,16 @@ def create_capital_flow_analyst(llm):
             "hallucinate data. Instead, note that capital flow analysis is "
             "not applicable for this ticker and suggest it may be a non-A-share "
             "instrument.\n"
+            "\n"
+            "**操纵模式识别 (Manipulation Pattern Recognition):**\n"
+            "After your standard flow analysis, scan for these manipulation patterns:\n"
+            "- **超大单/小单背离**: 超大单卖出 + 小单买入 → institutions distributing to retail (出货信号)\n"
+            "- **主力净占比异常**: >20% or <-15% → unusually strong institutional activity\n"
+            "- **连续多日流向趋势**: 5+ days consistent → reliable; sudden flip → potential manipulation\n"
+            "- **板块联动检查**: Sector inflow but stock outflow → underperformance signal\n"
+            "Add a '**操纵风险信号 (Manipulation Risk Signals)**' section with:\n"
+            "  | 检测模式 | 信号值 | 风险等级 | 说明 |\n"
+            "  |----------|--------|---------|------|\n"
             + get_language_instruction()
         )
 

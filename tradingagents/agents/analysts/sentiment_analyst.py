@@ -159,6 +159,14 @@ Produce a sentiment report covering, in order:
 4. **Catalysts and risks** surfaced by the data.
 5. **Markdown table** at the end summarizing key sentiment signals, their direction, source, and supporting evidence.
 
+## 主力资金交叉验证 (Capital Flow Cross-Validation)
+
+After your source-by-source analysis, add a cross-validation section comparing sentiment findings against capital flow data:
+- Extreme retail bullish (散户狂热) + 主力流出 → **情绪操控出货 (sentiment manipulation distribution)**
+- Extreme retail bearish (恐慌) + 主力流入 → **恐慌吸筹 (panic-driven accumulation)**
+- If retail sentiment diverges strongly from institutional flow, flag it as potential manipulation.
+- Add a '**主力资金交叉验证**' section with: sentiment direction, capital flow direction, consistency check, and manipulation risk level.
+
 {get_language_instruction()}"""
 
 
