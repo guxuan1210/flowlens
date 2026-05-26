@@ -143,7 +143,13 @@ async def run_analysis_background(run_id: str, params: dict) -> None:
         def _finish_run(final_state: dict):
             """Persist state and send completion — shared by normal and reviewed paths."""
             graph.ticker = params["ticker"]
-            graph._log_state(str(params["date"]), final_state)
+            try:
+                graph._log_state(str(params["date"]), final_state)
+            except Exception as exc:
+                print(f"[_finish_run] _log_state failed: {exc}", flush=True)
+                asyncio.run_coroutine_threadsafe(
+                    manager.send_error(run_id, f"Failed to save state log: {exc}"), loop
+                )
             graph.memory_log.store_decision(
                 ticker=params["ticker"],
                 trade_date=str(params["date"]),

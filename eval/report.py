@@ -65,10 +65,41 @@ def generate_report(metrics: dict, output_dir: str | None = None) -> str:
     lines.append("| Ticker | Date | Rating | Raw Return | Alpha | Days |")
     lines.append("|--------|------|--------|-----------|-------|------|")
 
-    # Use metrics directly rather than recomputing
     from eval.metrics import EvalMetrics
     lines.append("_[detailed results require entry-level data — use print_summary for terminal]_")
     lines.append("")
+
+    # Output Quality (LLM-as-Judge)
+    q = m.get("quality")
+    if q:
+        lines.append("## Output Quality (LLM-as-Judge)")
+        lines.append("")
+        lines.append(f"- **Entries scored**: {q['entries_scored']}")
+        lines.append(f"- **Avg overall score**: {q['avg_overall']}/5.0")
+        lines.append("")
+        lines.append("| Dimension | Avg | Min | Max |")
+        lines.append("|-----------|-----|-----|-----|")
+        for dim, stats in q.get("by_dimension", {}).items():
+            lines.append(
+                f"| {dim.replace('_', ' ')} | {stats['avg']} | {stats['min']} | {stats['max']} |"
+            )
+        lines.append("")
+        lines.append("### By Rating")
+        lines.append("")
+        lines.append("| Rating | Count | Avg Quality |")
+        lines.append("|--------|-------|-------------|")
+        for rating, stats in q.get("by_rating", {}).items():
+            lines.append(f"| **{rating}** | {stats['count']} | {stats['avg_overall']}/5.0 |")
+        lines.append("")
+        low = q.get("lowest_scoring", [])
+        if low:
+            lines.append("### Lowest-Scoring Entries")
+            lines.append("")
+            lines.append("| Ticker | Date | Rating | Overall |")
+            lines.append("|--------|------|--------|---------|")
+            for e in low:
+                lines.append(f"| {e['ticker']} | {e['date']} | {e['rating']} | {e['overall']}/5.0 |")
+            lines.append("")
 
     report = "\n".join(lines)
 
@@ -108,6 +139,17 @@ def print_summary(metrics: dict, detailed_rows: list[dict] | None = None):
                 f"alpha={stats['avg_alpha'] or '—':>7s}"
             )
     print("-" * 60)
+
+    q = m.get("quality")
+    if q:
+        print(f"  Output Quality:  {q['avg_overall']}/5.0 avg ({q['entries_scored']} scored)")
+        dims = q.get("by_dimension", {})
+        if dims:
+            dim_str = " | ".join(
+                f"{d.replace('_',' ')}: {s['avg']}" for d, s in dims.items()
+            )
+            print(f"  Dimensions:      {dim_str}")
+        print("-" * 60)
 
     if detailed_rows:
         resolved_rows = [r for r in detailed_rows if not r.get("pending")]

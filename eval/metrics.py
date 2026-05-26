@@ -22,15 +22,16 @@ def _parse_pct(val) -> float | None:
 class EvalMetrics:
     """Compute performance metrics from memory log entries."""
 
-    def __init__(self, entries: list[dict]):
+    def __init__(self, entries: list[dict], quality_scores: dict | None = None):
         self.entries = entries
         self.resolved = [e for e in entries if not e.get("pending")]
         self.pending = [e for e in entries if e.get("pending")]
         self._bullish = {"buy", "overweight"}
         self._bearish = {"sell", "underweight"}
+        self._quality_scores = quality_scores or {}
 
     def compute(self) -> dict:
-        return {
+        result = {
             "total_runs": len(self.entries),
             "resolved": len(self.resolved),
             "pending": len(self.pending),
@@ -42,6 +43,9 @@ class EvalMetrics:
             "winners": self._count_positive(),
             "losers": self._count_negative(),
         }
+        if self._quality_scores:
+            result["quality"] = self._aggregate_quality()
+        return result
 
     def direction_accuracy(self) -> dict:
         """Directional accuracy: bullish -> positive return, bearish -> negative.
@@ -127,6 +131,55 @@ class EvalMetrics:
 
     def _count_negative(self) -> int:
         return len([e for e in self.resolved if (_parse_pct(e.get("raw")) or 0) < 0])
+
+    def _aggregate_quality(self) -> dict:
+        """Aggregate quality scores across all scored entries."""
+        scores = self._quality_scores
+        if not scores:
+            return {"entries_scored": 0}
+
+        DIMS = [
+            "reasoning_clarity", "evidence_grounding",
+            "rating_thesis_alignment", "actionability", "format_completeness",
+        ]
+        entries = list(scores.values())
+        overalls = [e["overall"] for e in entries]
+
+        by_dim = {}
+        for dim in DIMS:
+            vals = [e["scores"][dim]["score"] for e in entries if dim in e.get("scores", {})]
+            if vals:
+                by_dim[dim] = {
+                    "avg": round(sum(vals) / len(vals), 1),
+                    "min": min(vals),
+                    "max": max(vals),
+                }
+
+        by_rating = {}
+        for e in entries:
+            r = e.get("rating", "Hold")
+            by_rating.setdefault(r, []).append(e["overall"])
+        for r in by_rating:
+            vals = by_rating[r]
+            by_rating[r] = {
+                "count": len(vals),
+                "avg_overall": round(sum(vals) / len(vals), 1),
+            }
+
+        sorted_entries = sorted(entries, key=lambda e: e["overall"])
+        lowest = [
+            {"ticker": e["ticker"], "date": e["date"], "rating": e["rating"],
+             "overall": e["overall"]}
+            for e in sorted_entries[:3]
+        ]
+
+        return {
+            "entries_scored": len(entries),
+            "avg_overall": round(sum(overalls) / len(overalls), 1) if overalls else None,
+            "by_dimension": by_dim,
+            "by_rating": by_rating,
+            "lowest_scoring": lowest,
+        }
 
     def detailed_results(self) -> list[dict]:
         """Return flat list of entries for tabular display."""

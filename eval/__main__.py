@@ -46,6 +46,14 @@ def main():
         "--output", type=str, default="",
         help="Output directory for report (default: eval/reports/)",
     )
+    parser.add_argument(
+        "--quality", action="store_true",
+        help="Enable LLM-as-judge output quality scoring",
+    )
+    parser.add_argument(
+        "--quality-force", action="store_true",
+        help="Re-score already-scored entries (used with --quality)",
+    )
     args = parser.parse_args()
 
     config = DEFAULT_CONFIG.copy()
@@ -71,9 +79,18 @@ def main():
         print("\nResolving pending entries ...")
         runner.resolve_all_pending()
 
+    # Quality evaluation (LLM-as-judge)
+    quality_scores = None
+    if args.quality:
+        from eval.quality import QualityEvaluator
+        qe = QualityEvaluator(config)
+        quality_scores = qe.batch_score(
+            runner.memory_log.load_entries(), force=args.quality_force
+        )
+
     # Generate report
     entries = runner.memory_log.load_entries()
-    metrics = EvalMetrics(entries)
+    metrics = EvalMetrics(entries, quality_scores=quality_scores)
     m = metrics.compute()
     detailed = metrics.detailed_results()
 
