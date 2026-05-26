@@ -1,14 +1,48 @@
 # TradingAgents/graph/setup.py
 
-from typing import Any, Dict
+from typing import Any, Dict, List
 from langgraph.graph import END, START, StateGraph
 from langgraph.prebuilt import ToolNode
+from langgraph.types import interrupt
 
 from tradingagents.agents import *
 from tradingagents.agents.utils.agent_states import AgentState
 
 from .analyst_execution import build_analyst_execution_plan
 from .conditional_logic import ConditionalLogic
+
+
+def _human_review_research(state: AgentState) -> Dict[str, Any]:
+    """Pause after Research Manager so a human can review the debate synthesis."""
+    payload = {
+        "review_point": "research_manager",
+        "ticker": state.get("company_of_interest", ""),
+        "investment_plan": state.get("investment_plan", ""),
+        "debate_history": state.get("investment_debate_state", {}).get("history", ""),
+    }
+    result = interrupt(payload)
+    if result and isinstance(result, dict) and result.get("feedback"):
+        current_plan = state.get("investment_plan", "")
+        return {"investment_plan": current_plan + "\n\n---\n### \U0001f9d1 Human Review Feedback\n" + result["feedback"]}
+    return {}
+
+
+def _human_review_portfolio(state: AgentState) -> Dict[str, Any]:
+    """Pause after Portfolio Manager so a human can review the final decision."""
+    payload = {
+        "review_point": "portfolio_manager",
+        "ticker": state.get("company_of_interest", ""),
+        "final_decision": state.get("final_trade_decision", ""),
+        "investment_plan": state.get("investment_plan", ""),
+        "trader_plan": state.get("trader_investment_plan", ""),
+        "risk_debate": state.get("risk_debate_state", {}).get("history", ""),
+        "past_context": state.get("past_context", ""),
+    }
+    result = interrupt(payload)
+    if result and isinstance(result, dict) and result.get("feedback"):
+        current_decision = state.get("final_trade_decision", "")
+        return {"final_trade_decision": current_decision + "\n\n---\n### \U0001f9d1 Human Review Feedback\n" + result["feedback"]}
+    return {}
 
 
 class GraphSetup:
@@ -30,7 +64,10 @@ class GraphSetup:
         self.analyst_concurrency_limit = analyst_concurrency_limit
 
     def setup_graph(
-        self, selected_analysts=["market", "social", "news", "fundamentals"]
+        self,
+        selected_analysts=["market", "social", "news", "fundamentals"],
+        enable_human_review: bool = False,
+        human_review_points: List[str] = None,
     ):
         """Set up and compile the agent workflow graph.
 
@@ -128,7 +165,14 @@ class GraphSetup:
                 "Research Manager": "Research Manager",
             },
         )
-        workflow.add_edge("Research Manager", "Trader")
+        # Insert human review gate after Research Manager (before Trader)
+        if enable_human_review and human_review_points and "research_manager" in human_review_points:
+            workflow.add_node("Human Review Research", _human_review_research)
+            workflow.add_edge("Research Manager", "Human Review Research")
+            workflow.add_edge("Human Review Research", "Trader")
+        else:
+            workflow.add_edge("Research Manager", "Trader")
+
         workflow.add_edge("Trader", "Aggressive Analyst")
         workflow.add_conditional_edges(
             "Aggressive Analyst",
@@ -155,7 +199,13 @@ class GraphSetup:
             },
         )
 
-        workflow.add_edge("Portfolio Manager", "Manipulation Risk Analyzer")
+        # Insert human review gate after Portfolio Manager (before Manipulation Risk Analyzer)
+        if enable_human_review and human_review_points and "portfolio_manager" in human_review_points:
+            workflow.add_node("Human Review Portfolio", _human_review_portfolio)
+            workflow.add_edge("Portfolio Manager", "Human Review Portfolio")
+            workflow.add_edge("Human Review Portfolio", "Manipulation Risk Analyzer")
+        else:
+            workflow.add_edge("Portfolio Manager", "Manipulation Risk Analyzer")
         workflow.add_edge("Manipulation Risk Analyzer", END)
 
         return workflow

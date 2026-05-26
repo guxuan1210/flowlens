@@ -30,6 +30,12 @@ export interface ErrorPayload {
   agent?: string
 }
 
+export interface HumanReviewPayload {
+  review_point: 'research_manager' | 'portfolio_manager'
+  ticker: string
+  data: Record<string, unknown>
+}
+
 export type WSMessageType =
   | 'agent_status'
   | 'report_chunk'
@@ -39,9 +45,10 @@ export type WSMessageType =
   | 'completion'
   | 'error'
   | 'pipeline_stage'
+  | 'human_review_required'
 
 export interface WSMessage {
   type: WSMessageType
   timestamp: string
-  payload: AgentStatusPayload | ReportChunkPayload | StatsPayload | CompletionPayload | ErrorPayload | Record<string, unknown>
+  payload: AgentStatusPayload | ReportChunkPayload | StatsPayload | CompletionPayload | ErrorPayload | HumanReviewPayload | Record<string, unknown>
 }

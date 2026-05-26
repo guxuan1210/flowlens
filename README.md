@@ -12,7 +12,6 @@
 </div>
 
 <div align="center">
-  <!-- Keep these links. Translations will automatically update with the README. -->
   <a href="https://www.readme-i18n.com/TauricResearch/TradingAgents?lang=de">Deutsch</a> | 
   <a href="https://www.readme-i18n.com/TauricResearch/TradingAgents?lang=es">Español</a> | 
   <a href="https://www.readme-i18n.com/TauricResearch/TradingAgents?lang=fr">français</a> | 
@@ -25,39 +24,52 @@
 
 ---
 
-# TradingAgents: Multi-Agents LLM Financial Trading Framework
+# FlowLens: Capital-Flow-Aware Multi-Agent Market Intelligence
+
+> Helping retail investors interpret market narratives, risk signals, and dominant capital movement through multi-agent reasoning.
+>
+> 🚀 **Web Dashboard** now available with real-time analysis streaming, human-in-the-loop review, and one-click configuration.
 
 ## News
-- [2026-05] **TradingAgents v0.2.5** released with the grounded Sentiment Analyst, GPT-5.5 etc. model coverage, Qwen/GLM/MiniMax dual-region support, `TRADINGAGENTS_*` env-var configurability with API-key auto-detection, remote Ollama support, non-US alpha benchmarks, and ticker path-traversal hardening. See [CHANGELOG.md](CHANGELOG.md) for the full list.
-- [2026-04] **TradingAgents v0.2.4** released with structured-output agents (Research Manager, Trader, Portfolio Manager), LangGraph checkpoint resume, persistent decision log, DeepSeek/Qwen/GLM/Azure provider support, Docker, and a Windows UTF-8 encoding fix.
+- [2026-05] **Web Dashboard** released with React + FastAPI stack, real-time WebSocket streaming, human-in-the-loop review gates, East Money (东方财富) news integration, and Capital Flow Analyst. See [CHANGELOG.md](CHANGELOG.md).
+- [2026-05] **TradingAgents v0.2.5** released with the grounded Sentiment Analyst, GPT-5.5 etc. model coverage, Qwen/GLM/MiniMax dual-region support, `TRADINGAGENTS_*` env-var configurability with API-key auto-detection, remote Ollama support, non-US alpha benchmarks, and ticker path-traversal hardening.
+- [2026-04] **TradingAgents v0.2.4** released with structured-output agents (Research Manager, Trader, Portfolio Manager), LangGraph checkpoint resume, persistent decision log, DeepSeek/Qwen/GLM/Azure provider support, and Docker.
 - [2026-03] **TradingAgents v0.2.3** released with multi-language support, GPT-5.4 family models, unified model catalog, backtesting date fidelity, and proxy support.
-- [2026-03] **TradingAgents v0.2.2** released with GPT-5.4/Gemini 3.1/Claude 4.6 model coverage, five-tier rating scale, OpenAI Responses API, Anthropic effort control, and cross-platform stability.
-- [2026-02] **TradingAgents v0.2.0** released with multi-provider LLM support (GPT-5.x, Gemini 3.x, Claude 4.x, Grok 4.x) and improved system architecture.
-- [2026-01] **Trading-R1** [Technical Report](https://arxiv.org/abs/2509.11420) released, with [Terminal](https://github.com/TauricResearch/Trading-R1) expected to land soon.
-
-<div align="center">
-<a href="https://www.star-history.com/#TauricResearch/TradingAgents&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=TauricResearch/TradingAgents&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=TauricResearch/TradingAgents&type=Date" />
-   <img alt="TradingAgents Star History" src="https://api.star-history.com/svg?repos=TauricResearch/TradingAgents&type=Date" style="width: 80%; height: auto;" />
- </picture>
-</a>
-</div>
-
-> 🎉 **TradingAgents** officially released! We have received numerous inquiries about the work, and we would like to express our thanks for the enthusiasm in our community.
->
-> So we decided to fully open-source the framework. Looking forward to building impactful projects with you!
 
 <div align="center">
 
-🚀 [TradingAgents](#tradingagents-framework) | ⚡ [Installation & CLI](#installation-and-cli) | 🎬 [Demo](https://www.youtube.com/watch?v=90gr5lwjIho) | 📦 [Package Usage](#tradingagents-package) | 🤝 [Contributing](#contributing) | 📄 [Citation](#citation)
+🚀 [Motivation](#motivation-from-institutional-ai-to-retail-oriented-market-intelligence) | ⚡ [Installation & CLI](#installation-and-cli) | 🖥️ [Web Dashboard](#web-dashboard) | 🎬 [Demo](https://www.youtube.com/watch?v=90gr5lwjIho) | 📦 [Package Usage](#tradingagents-package) | 🤝 [Contributing](#contributing) | 📄 [Citation](#citation)
 
 </div>
 
-## TradingAgents Framework
+## Motivation: From Institutional AI to Retail-Oriented Market Intelligence
 
-TradingAgents is a multi-agent trading framework that mirrors the dynamics of real-world trading firms. By deploying specialized LLM-powered agents: from fundamental analysts, sentiment experts, and technical analysts, to trader, risk management team, the platform collaboratively evaluates market conditions and informs trading decisions. Moreover, these agents engage in dynamic discussions to pinpoint the optimal strategy.
+Most financial AI agents are designed around institutional workflows: reading financial reports, summarizing market news, generating investment theses, and supporting portfolio decisions. While these capabilities are valuable, they mainly improve the decision-making efficiency of already resource-rich market participants.
+
+FlowLens takes a slightly different perspective. Instead of only building an AI assistant for institutional-style decision making, it aims to make institutional-level market intelligence more accessible and interpretable for retail investors.
+
+In markets such as China A-shares, retail investors often face strong information asymmetry. Public news, price charts, and financial statements are important, but they may not fully reveal how capital is actually moving behind market trends. For retail investors, one of the most important questions is not only "Is this company good?" or "What does the news say?", but also:
+
+> Are major market players accumulating or exiting this position?
+
+This is why FlowLens introduces a dedicated **Capital Flow Analyst**. Rather than directly inferring institutional investors' internal decision-making process, which is usually opaque and difficult to verify, the system uses observable capital-flow signals as behavioral proxies. These include major capital inflows and outflows, large-order and extra-large-order net flows, sector-level fund rotation, and north-bound capital movement.
+
+By integrating capital flow analysis into a multi-agent debate and risk-management pipeline, FlowLens helps users move from narrative-based analysis to behavior-based market interpretation. The goal is not to predict or imitate institutional decisions, but to reduce information asymmetry, make capital movement more transparent, and support a more balanced decision-making environment between retail investors and dominant capital players.
+
+### Design Goals
+
+1. **Institutional-level reasoning**
+   Use specialized agents to analyze fundamentals, technical indicators, news, sentiment, risk, and portfolio decisions.
+
+2. **Retail-oriented transparency**
+   Translate complex market signals into interpretable reports that individual investors can understand and review.
+
+3. **Capital-flow awareness**
+   Incorporate major capital flow, sector rotation, and north-bound capital signals to help users understand the game between retail investors and dominant capital players.
+
+---
+
+The platform deploys specialized LLM-powered agents—from fundamental analysts, sentiment experts, and technical analysts, to trader, risk management team, and manipulation detector—that collaboratively evaluate market conditions and engage in structured debates to arrive at the optimal strategy.
 
 <p align="center">
   <img src="assets/schema.png" style="width: 100%; height: auto;">
@@ -65,64 +77,147 @@ TradingAgents is a multi-agent trading framework that mirrors the dynamics of re
 
 > TradingAgents framework is designed for research purposes. Trading performance may vary based on many factors, including the chosen backbone language models, model temperature, trading periods, the quality of data, and other non-deterministic factors. [It is not intended as financial, investment, or trading advice.](https://tauric.ai/disclaimer/)
 
-Our framework decomposes complex trading tasks into specialized roles. This ensures the system achieves a robust, scalable approach to market analysis and decision-making.
+Our framework decomposes complex trading tasks into specialized roles for robust, scalable market analysis.
 
 ### Analyst Team
-- Fundamentals Analyst: Evaluates company financials and performance metrics, identifying intrinsic values and potential red flags.
-- Sentiment Analyst: Aggregates news headlines, StockTwits, and Reddit chatter into a single sentiment read to gauge short-term market mood.
-- News Analyst: Monitors global news and macroeconomic indicators, interpreting the impact of events on market conditions.
-- Technical Analyst: Utilizes technical indicators (like MACD and RSI) to detect trading patterns and forecast price movements.
+- **Market Analyst**: Technical analysis using MACD, RSI, and other indicators to detect patterns and forecast price movements.
+- **Sentiment Analyst**: Aggregates news headlines and social media chatter to gauge short-term market mood.
+- **News Analyst**: Monitors global news and macroeconomic indicators, interpreting the impact of events on market conditions.
+- **Fundamentals Analyst**: Evaluates company financials, balance sheets, and cash flow, identifying intrinsic values and potential red flags.
+- **Capital Flow Analyst** (主力资金分析): Tracks institutional money—major capital flows, sector fund rotation, and north-bound capital. Answers the question no chart can: *"Are the big players buying or selling?"* Uses AKShare and Tushare data to surface smart money signals that price-based analysis alone would miss.
 
 <p align="center">
   <img src="assets/analyst.png" width="100%" style="display: inline-block; margin: 0 2%;">
 </p>
 
 ### Researcher Team
-- Comprises both bullish and bearish researchers who critically assess the insights provided by the Analyst Team. Through structured debates, they balance potential gains against inherent risks.
+Bullish and bearish researchers critically assess the insights from the Analyst Team. Through structured debates, they balance potential gains against inherent risks.
 
 <p align="center">
   <img src="assets/researcher.png" width="70%" style="display: inline-block; margin: 0 2%;">
 </p>
 
 ### Trader Agent
-- Composes reports from the analysts and researchers to make informed trading decisions. It determines the timing and magnitude of trades based on comprehensive market insights.
+Composes the analysts' and researchers' findings into a concrete trading proposal with entry/exit timing and position sizing.
 
 <p align="center">
   <img src="assets/trader.png" width="70%" style="display: inline-block; margin: 0 2%;">
 </p>
 
 ### Risk Management and Portfolio Manager
-- Continuously evaluates portfolio risk by assessing market volatility, liquidity, and other risk factors. The risk management team evaluates and adjusts trading strategies, providing assessment reports to the Portfolio Manager for final decision.
-- The Portfolio Manager approves/rejects the transaction proposal. If approved, the order will be sent to the simulated exchange and executed.
+- The **Risk Team** (Aggressive, Neutral, Conservative analysts) debates portfolio risk from multiple angles, assessing volatility, liquidity, and tail risk.
+- The **Portfolio Manager** synthesizes all prior work and produces the final trade decision (Buy/Overweight/Hold/Underweight/Sell).
 
 <p align="center">
   <img src="assets/risk.png" width="70%" style="display: inline-block; margin: 0 2%;">
 </p>
 
+### Manipulation Risk Analyzer
+Cross-references all analyst reports to detect potential market manipulation signals, conflicting narratives, or coordinated information campaigns, providing a final integrity check before the decision is committed.
+
+### Full Pipeline
+
+```
+Analysts (market → sentiment → news → fundamentals → capital_flow)
+  → Bull Researcher ⇄ Bear Researcher (structured debate)
+    → Research Manager → [Human Review Gate*]
+      → Trader
+        → Aggressive ⇄ Conservative ⇄ Neutral (risk debate)
+          → Portfolio Manager → [Human Review Gate*]
+            → Manipulation Risk Analyzer → Final Decision
+```
+
+*\*Human Review Gates are optional and toggleable per run.*
+
+## What's Different from the Original TradingAgents
+
+This project builds on [TauricResearch/TradingAgents](https://github.com/TauricResearch/TradingAgents) and adds features focused on real-world usability, Chinese market depth, and human-AI collaboration.
+
+| Area | Original TradingAgents | This Project Adds |
+|------|----------------------|-------------------|
+| **Interface** | CLI only (terminal wizard) | Web Dashboard — start analysis, watch it stream live, browse history, all in browser |
+| **Analysts** | 4 (Market, Sentiment, News, Fundamentals) | **+ Capital Flow Analyst** (主力资金, sector flow, north-bound capital) |
+| **Agents** | Bull/Bear Researchers, Trader, 3 Risk Analysts, Portfolio Manager | **+ Manipulation Risk Analyzer** (cross-reference integrity check) |
+| **Human interaction** | Fully autonomous, no way to intervene | **Human-in-the-Loop Review** — pause at Research Manager or Portfolio Manager, approve or revise with feedback |
+| **Chinese markets** | Limited (yfinance has spotty China coverage) | **First-class A-share support**: East Money news, Caixin, AKShare data, capital flow tracking |
+| **News sources** | yfinance + Alpha Vantage | **+ AKShare + East Money (东方财富)**, with automatic fallback chain |
+| **Streaming** | Terminal Live layout | **WebSocket real-time** — each agent's output appears as it's generated |
+| **Configuration** | Edit `DEFAULT_CONFIG` in code or set env vars | **Settings UI** — change LLM, models, debate depth, vendors, and review gates from browser |
+| **Pipeline visibility** | Progress bar in terminal | **Stage tracking** — know exactly which phase is running (Analysts → Research → Trader → Risk → Decision) |
+| **Decision history** | Append-only markdown log | Browse past runs and full decision trails in dashboard |
+
+In short: the original is a powerful research framework. This project wraps it in a usable interface, adds capital flow intelligence for Chinese markets, and lets humans step in at critical decisions instead of watching from the sidelines.
+
+## Web Dashboard
+
+FlowLens ships with a full web dashboard for visual analysis management.
+
+```bash
+# Start the backend
+python -m dashboard.api.app
+
+# Start the frontend (separate terminal)
+cd dashboard/frontend
+npm install
+npm run dev
+```
+
+### Features
+- **Real-time streaming**: Watch each agent's output appear live via WebSocket as the analysis runs
+- **Pipeline visualization**: Track which stage the analysis is in (Analysts → Research → Trader → Risk → Decision)
+- **Human-in-the-Loop review**: Optionally pause at key decision points (Research Manager, Portfolio Manager) to review, approve, or revise the AI's output with feedback
+- **One-click settings**: Configure LLM providers, models, research depth, data vendors, and review gates from the browser
+- **Analysis history**: Browse past runs and their full decision trails
+- **Multi-language**: Output in English, Chinese, Japanese, Korean, and more
+
+### Human-in-the-Loop Review
+
+When enabled, the pipeline pauses at two critical checkpoints:
+
+| Gate | What you review | What you can do |
+|------|----------------|------------------|
+| **Research Manager** | The Bull/Bear debate synthesis and investment plan | Approve, revise with feedback |
+| **Portfolio Manager** | The final trade decision and risk assessment | Approve, override rating, or provide feedback |
+
+Your feedback is injected into subsequent nodes, so downstream agents see and respond to it. The feature is toggleable per analysis run—turn it on when you want oversight, off for fully autonomous runs.
+
+### Chinese Market Support (A-Share / 国内市场)
+
+FlowLens has first-class support for Chinese markets that goes well beyond surface-level news translation.
+
+**Capital flow is the core differentiator.** In A-share markets, the single most important signal is 资金流向—where institutional money is flowing. Most overseas tools are blind to this. FlowLens integrates:
+
+- **Capital Flow Analyst (主力资金分析)**: Real-time tracking of major capital flows (大单/超大单净流入), institutional vs retail money, and sector-level fund rotation. Uses AKShare's `stock_individual_fund_flow` and Tushare's moneyflow API.
+- **Sector Flow Analysis (板块资金流向)**: Identifies which industry sectors are attracting or losing institutional capital, surfacing rotation signals before they show up in prices.
+- **North-bound Capital (北向资金)**: Tracks foreign capital flowing through Stock Connect into A-shares—a leading indicator closely watched by Chinese traders.
+
+**News sources that actually matter for Chinese stocks:**
+- **East Money (东方财富)**: The largest retail investor platform in China. Ticker-specific news and market-wide headlines.
+- **Caixin (财新)**: Authoritative financial and economic reporting, via AKShare bridge.
+- **AKShare**: Native A-share data for prices, fundamentals, and capital flows.
+
 ## Installation and CLI
 
 ### Installation
 
-Clone TradingAgents:
 ```bash
 git clone https://github.com/TauricResearch/TradingAgents.git
 cd TradingAgents
 ```
 
-Create a virtual environment in any of your favorite environment managers:
+Create a virtual environment:
 ```bash
 conda create -n tradingagents python=3.13
 conda activate tradingagents
 ```
 
-Install the package and its dependencies:
+Install:
 ```bash
 pip install .
 ```
 
 ### Docker
 
-Alternatively, run with Docker:
 ```bash
 cp .env.example .env  # add your API keys
 docker compose run --rm tradingagents
@@ -135,7 +230,7 @@ docker compose --profile ollama run --rm tradingagents-ollama
 
 ### Required APIs
 
-TradingAgents supports multiple LLM providers. Set the API key for your chosen provider:
+Set the API key for your chosen LLM provider:
 
 ```bash
 export OPENAI_API_KEY=...          # OpenAI (GPT)
@@ -143,79 +238,40 @@ export GOOGLE_API_KEY=...          # Google (Gemini)
 export ANTHROPIC_API_KEY=...       # Anthropic (Claude)
 export XAI_API_KEY=...             # xAI (Grok)
 export DEEPSEEK_API_KEY=...        # DeepSeek
-export DASHSCOPE_API_KEY=...       # Qwen — International (dashscope-intl.aliyuncs.com)
-export DASHSCOPE_CN_API_KEY=...    # Qwen — China (dashscope.aliyuncs.com)
+export DASHSCOPE_API_KEY=...       # Qwen — International
+export DASHSCOPE_CN_API_KEY=...    # Qwen — China
 export ZHIPU_API_KEY=...           # GLM via Z.AI (international)
-export ZHIPU_CN_API_KEY=...        # GLM via BigModel (China, open.bigmodel.cn)
-export MINIMAX_API_KEY=...         # MiniMax — Global (api.minimax.io, M2.x, 204K ctx)
-export MINIMAX_CN_API_KEY=...      # MiniMax — China (api.minimaxi.com, M2.x, 204K ctx)
+export ZHIPU_CN_API_KEY=...        # GLM via BigModel (China)
+export MINIMAX_API_KEY=...         # MiniMax — Global
+export MINIMAX_CN_API_KEY=...      # MiniMax — China
 export OPENROUTER_API_KEY=...      # OpenRouter
-export ALPHA_VANTAGE_API_KEY=...   # Alpha Vantage
-```
-
-For enterprise providers (e.g. Azure OpenAI, AWS Bedrock), copy `.env.enterprise.example` to `.env.enterprise` and fill in your credentials.
-
-For local models, configure Ollama with `llm_provider: "ollama"`. The default endpoint is `http://localhost:11434/v1`; set `OLLAMA_BASE_URL` to point at a remote `ollama-serve`. Pull models with `ollama pull <name>`, and pick "Custom model ID" in the CLI for any model not listed by default.
-
-Alternatively, copy `.env.example` to `.env` and fill in your keys:
-```bash
-cp .env.example .env
+export ALPHA_VANTAGE_API_KEY=...   # Alpha Vantage (data vendor)
+export TUSHARE_TOKEN=...           # Tushare (A-share capital flow)
 ```
 
 ### CLI Usage
 
-Launch the interactive CLI:
 ```bash
-tradingagents          # installed command
-python -m cli.main     # alternative: run directly from source
+tradingagents          # interactive wizard
+tradingagents analyze  # skip wizard, go straight to analysis
+
+# Checkpoint & resume
+tradingagents analyze --checkpoint
+tradingagents analyze --clear-checkpoints
 ```
-You will see a screen where you can select your desired tickers, analysis date, LLM provider, research depth, and more.
-
-<p align="center">
-  <img src="assets/cli/cli_init.png" width="100%" style="display: inline-block; margin: 0 2%;">
-</p>
-
-An interface will appear showing results as they load, letting you track the agent's progress as it runs.
-
-<p align="center">
-  <img src="assets/cli/cli_news.png" width="100%" style="display: inline-block; margin: 0 2%;">
-</p>
-
-<p align="center">
-  <img src="assets/cli/cli_transaction.png" width="100%" style="display: inline-block; margin: 0 2%;">
-</p>
 
 ## TradingAgents Package
 
-### Implementation Details
-
-We built TradingAgents with LangGraph to ensure flexibility and modularity. The framework supports multiple LLM providers: OpenAI, Google, Anthropic, xAI, DeepSeek, Qwen (Alibaba DashScope, international and China endpoints), GLM (Zhipu), MiniMax (global + China), OpenRouter, Ollama for local models, and Azure OpenAI for enterprise.
-
 ### Python Usage
-
-To use TradingAgents inside your code, you can import the `tradingagents` module and initialize a `TradingAgentsGraph()` object. The `.propagate()` function will return a decision. You can run `main.py`, here's also a quick example:
-
-```python
-from tradingagents.graph.trading_graph import TradingAgentsGraph
-from tradingagents.default_config import DEFAULT_CONFIG
-
-ta = TradingAgentsGraph(debug=True, config=DEFAULT_CONFIG.copy())
-
-# forward propagate
-_, decision = ta.propagate("NVDA", "2026-01-15")
-print(decision)
-```
-
-You can also adjust the default configuration to set your own choice of LLMs, debate rounds, etc.
 
 ```python
 from tradingagents.graph.trading_graph import TradingAgentsGraph
 from tradingagents.default_config import DEFAULT_CONFIG
 
 config = DEFAULT_CONFIG.copy()
-config["llm_provider"] = "openai"        # openai, google, anthropic, xai, deepseek, qwen, qwen-cn, glm, glm-cn, minimax, minimax-cn, openrouter, ollama, azure
-config["deep_think_llm"] = "gpt-5.4"     # Model for complex reasoning
-config["quick_think_llm"] = "gpt-5.4-mini" # Model for quick tasks
+config["llm_provider"] = "openai"
+config["deep_think_llm"] = "gpt-5.4"
+config["quick_think_llm"] = "gpt-5.4-mini"
 config["max_debate_rounds"] = 2
 
 ta = TradingAgentsGraph(debug=True, config=config)
@@ -223,47 +279,52 @@ _, decision = ta.propagate("NVDA", "2026-01-15")
 print(decision)
 ```
 
-See `tradingagents/default_config.py` for all configuration options.
+### Configuration Highlights
+
+See `tradingagents/default_config.py` for all options. Key settings:
+
+| Key | Description | Default |
+|-----|-------------|---------|
+| `llm_provider` | LLM provider | `"openai"` |
+| `deep_think_llm` / `quick_think_llm` | Model selection | `"gpt-5.4"` / `"gpt-5.4-mini"` |
+| `max_debate_rounds` | Bull/Bear debate depth | `1` |
+| `max_risk_discuss_rounds` | Risk debate depth | `1` |
+| `analyst_concurrency_limit` | Parallel analysts | `1` |
+| `output_language` | Report language | `"English"` |
+| `data_vendors` | Per-category data source | yfinance |
+| `enable_human_review` | Human-in-the-loop gates | `False` |
+| `human_review_points` | Which gates to enable | `["research_manager", "portfolio_manager"]` |
+| `checkpoint_enabled` | LangGraph resume | `False` |
+
+### Data Vendors
+
+Multi-vendor data layer with automatic fallback:
+
+| Category | Available Vendors |
+|----------|-------------------|
+| Core stock APIs | yfinance, Alpha Vantage |
+| Technical indicators | yfinance, Alpha Vantage |
+| Fundamental data | yfinance, Alpha Vantage |
+| News | yfinance, Alpha Vantage, AKShare, East Money |
+| Capital flow | AKShare, Tushare |
 
 ## Persistence and Recovery
 
-TradingAgents persists two kinds of state across runs.
+### Decision Log
 
-### Decision log
+Always on. Each completed run appends its decision to `~/.tradingagents/memory/trading_memory.md`. On the next run for the same ticker, TradingAgents fetches realised returns (raw and alpha vs benchmark), generates a reflection, and injects past context into the Portfolio Manager prompt.
 
-The decision log is always on. Each completed run appends its decision to `~/.tradingagents/memory/trading_memory.md`. On the next run for the same ticker, TradingAgents fetches the realised return (raw and alpha vs SPY), generates a one-paragraph reflection, and injects the most recent same-ticker decisions plus recent cross-ticker lessons into the Portfolio Manager prompt, so each analysis carries forward what worked and what didn't.
+### Checkpoint Resume
 
-Override the path with `TRADINGAGENTS_MEMORY_LOG_PATH`.
-
-### Checkpoint resume
-
-Checkpoint resume is opt-in via `--checkpoint`. When enabled, LangGraph saves state after each node so a crashed or interrupted run resumes from the last successful step instead of starting over. On a resume run you will see `Resuming from step N for <TICKER> on <date>` in the logs; on a new run you will see `Starting fresh`. Checkpoints are cleared automatically on successful completion.
-
-Per-ticker SQLite databases live at `~/.tradingagents/cache/checkpoints/<TICKER>.db` (override the base with `TRADINGAGENTS_CACHE_DIR`). Use `--clear-checkpoints` to reset all of them before a run.
-
-```bash
-tradingagents analyze --checkpoint           # enable for this run
-tradingagents analyze --clear-checkpoints    # reset before running
-```
-
-```python
-config = DEFAULT_CONFIG.copy()
-config["checkpoint_enabled"] = True
-ta = TradingAgentsGraph(config=config)
-_, decision = ta.propagate("NVDA", "2026-01-15")
-```
+Opt-in via `--checkpoint` or `checkpoint_enabled: True`. LangGraph saves state after each node so a crashed run resumes from the last successful step. Checkpoints are cleared automatically on successful completion.
 
 ## Contributing
 
-We welcome contributions from the community! Whether it's fixing a bug, improving documentation, or suggesting a new feature, your input helps make this project better. If you are interested in this line of research, please consider joining our open-source financial AI research community [Tauric Research](https://tauric.ai/).
-
-Past contributions, including code, design feedback, and bug reports, are credited per release in [`CHANGELOG.md`](CHANGELOG.md).
+We welcome contributions from the community! Whether it's fixing a bug, improving documentation, or suggesting a new feature, your input helps make this project better. Join our open-source financial AI research community [Tauric Research](https://tauric.ai/).
 
 ## Citation
 
-Please reference our work if you find *TradingAgents* provides you with some help :)
-
-```
+```bibtex
 @misc{xiao2025tradingagentsmultiagentsllmfinancial,
       title={TradingAgents: Multi-Agents LLM Financial Trading Framework}, 
       author={Yijia Xiao and Edward Sun and Di Luo and Wei Wang},

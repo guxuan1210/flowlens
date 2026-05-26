@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { AgentStatus, CompletionPayload } from '@/types/streaming'
+import type { AgentStatus, CompletionPayload, HumanReviewPayload } from '@/types/streaming'
 
 interface AnalysisState {
   runId: string | null
@@ -12,6 +12,9 @@ interface AnalysisState {
   completion: CompletionPayload | null
   error: string | null
   pipelineStage: string | null
+  // Human review
+  humanReview: HumanReviewPayload | null
+  isWaitingForReview: boolean
   // Actions
   startRun: (runId: string, ticker: string, date: string) => void
   updateAgentStatus: (agent: string, status: AgentStatus) => void
@@ -20,6 +23,8 @@ interface AnalysisState {
   setCompleted: (payload: CompletionPayload) => void
   setError: (message: string) => void
   setPipelineStage: (stage: string) => void
+  setHumanReview: (payload: HumanReviewPayload | null) => void
+  clearHumanReview: () => void
   reset: () => void
 }
 
@@ -34,12 +39,14 @@ const initialState = {
   completion: null as CompletionPayload | null,
   error: null as string | null,
   pipelineStage: null as string | null,
+  humanReview: null as HumanReviewPayload | null,
+  isWaitingForReview: false,
 }
 
 export const useAnalysisStore = create<AnalysisState>((set) => ({
   ...initialState,
   startRun: (runId, ticker, date) =>
-    set({ runId, ticker, date, status: 'running', agentStatuses: {}, reportSections: {}, stats: initialState.stats, completion: null, error: null, pipelineStage: null }),
+    set({ runId, ticker, date, status: 'running', agentStatuses: {}, reportSections: {}, stats: initialState.stats, completion: null, error: null, pipelineStage: null, humanReview: null, isWaitingForReview: false }),
   updateAgentStatus: (agent, status) =>
     set((s) => ({ agentStatuses: { ...s.agentStatuses, [agent]: status } })),
   updateReportSection: (section, content) =>
@@ -48,5 +55,7 @@ export const useAnalysisStore = create<AnalysisState>((set) => ({
   setCompleted: (payload) => set({ status: 'completed', completion: payload }),
   setError: (message) => set({ status: 'error', error: message }),
   setPipelineStage: (stage: string) => set({ pipelineStage: stage }),
+  setHumanReview: (payload) => set({ humanReview: payload, isWaitingForReview: true }),
+  clearHumanReview: () => set({ humanReview: null, isWaitingForReview: false }),
   reset: () => set(initialState),
 }))

@@ -58,6 +58,8 @@ class TradingAgentsGraph:
         debug=False,
         config: Dict[str, Any] = None,
         callbacks: Optional[List] = None,
+        enable_human_review: bool = False,
+        human_review_points: Optional[List[str]] = None,
     ):
         """Initialize the trading agents graph and components.
 
@@ -66,6 +68,8 @@ class TradingAgentsGraph:
             debug: Whether to run in debug mode
             config: Configuration dictionary. If None, uses default config
             callbacks: Optional list of callback handlers (e.g., for tracking LLM/tool stats)
+            enable_human_review: If True, insert human review gates after RM and PM
+            human_review_points: Which gates to enable (["research_manager", "portfolio_manager"])
         """
         self.debug = debug
         self.config = config or DEFAULT_CONFIG
@@ -131,9 +135,15 @@ class TradingAgentsGraph:
         self.log_states_dict = {}  # date to full state dict
 
         # Set up the graph: keep the workflow for recompilation with a checkpointer.
-        self.workflow = self.graph_setup.setup_graph(selected_analysts)
+        self.workflow = self.graph_setup.setup_graph(
+            selected_analysts,
+            enable_human_review=enable_human_review,
+            human_review_points=human_review_points or [],
+        )
         self.graph = self.workflow.compile()
         self._checkpointer_ctx = None
+        self._enable_human_review = enable_human_review
+        self._human_review_points = human_review_points or []
 
     def _get_provider_kwargs(self) -> Dict[str, Any]:
         """Get provider-specific kwargs for LLM client creation."""
@@ -315,8 +325,12 @@ class TradingAgentsGraph:
         # Resolve any pending memory-log entries for this ticker before the pipeline runs.
         self._resolve_pending_entries(company_name)
 
-        # Recompile with a checkpointer if the user opted in.
-        if self.config.get("checkpoint_enabled"):
+        # Recompile with a checkpointer if the user opted in, or if human review is
+        # enabled (interrupt() requires a checkpointer to save/resume state).
+        needs_checkpoint = self.config.get("checkpoint_enabled") or (
+            getattr(self, "_enable_human_review", False) is True
+        )
+        if needs_checkpoint:
             self._checkpointer_ctx = get_checkpointer(
                 self.config["data_cache_dir"], company_name
             )
@@ -339,6 +353,8 @@ class TradingAgentsGraph:
             if self._checkpointer_ctx is not None:
                 self._checkpointer_ctx.__exit__(None, None, None)
                 self._checkpointer_ctx = None
+                # Recompile without checkpointer so future non-checkpoint runs work.
+                # But keep interrupt nodes if human review is still on.
                 self.graph = self.workflow.compile()
 
     def _run_graph(self, company_name, trade_date, asset_type: str = "stock"):
@@ -351,7 +367,8 @@ class TradingAgentsGraph:
         args = self.propagator.get_graph_args()
 
         # Inject thread_id so same ticker+date resumes, different date starts fresh.
-        if self.config.get("checkpoint_enabled"):
+        # Required for both checkpoint resume and human-in-the-loop interrupts.
+        if self.config.get("checkpoint_enabled") or getattr(self, "_enable_human_review", False) is True:
             tid = thread_id(company_name, str(trade_date))
             args.setdefault("config", {}).setdefault("configurable", {})["thread_id"] = tid
 
@@ -385,7 +402,7 @@ class TradingAgentsGraph:
         )
 
         # Clear checkpoint on successful completion to avoid stale state.
-        if self.config.get("checkpoint_enabled"):
+        if self.config.get("checkpoint_enabled") or getattr(self, "_enable_human_review", False) is True:
             clear_checkpoint(
                 self.config["data_cache_dir"], company_name, str(trade_date)
             )

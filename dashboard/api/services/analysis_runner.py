@@ -2,18 +2,25 @@
 
 Runs the synchronous LangGraph in a background thread and pushes agent
 progress, report chunks, and stats through the WebSocket connection manager.
+
+When human review is enabled, pauses the graph at decision points and waits
+for human input before resuming via LangGraph's interrupt() mechanism.
 """
 
 from __future__ import annotations
 
 import asyncio
+import concurrent.futures
 import threading
 import time
 import uuid
 from typing import Any
 
+from langgraph.types import Command
+
 from cli.stats_handler import StatsCallbackHandler
 from tradingagents.graph.trading_graph import TradingAgentsGraph
+from tradingagents.graph.checkpointer import get_checkpointer, thread_id
 from tradingagents.graph.analyst_execution import (
     AnalystWallTimeTracker,
     build_analyst_execution_plan,
@@ -23,6 +30,8 @@ from tradingagents.graph.analyst_execution import (
 from dashboard.api.websocket_manager import manager
 
 _active_runs: dict[str, dict[str, Any]] = {}
+# Bridge between daemon thread (blocked on interrupt) and API endpoint (human submits review).
+_review_futures: dict[str, concurrent.futures.Future] = {}
 
 ANALYST_ORDER = ["market", "social", "news", "fundamentals", "capital_flow"]
 
@@ -105,6 +114,8 @@ async def run_analysis_background(run_id: str, params: dict) -> None:
         wall_time_tracker.mark_started(selected_analyst_keys[0])
 
         # Create graph in thread (blocking LLM client init)
+        enable_human_review = params.get("enable_human_review", False)
+        human_review_points = params.get("human_review_points", [])
         graph = await loop.run_in_executor(
             None,
             lambda: TradingAgentsGraph(
@@ -112,45 +123,25 @@ async def run_analysis_background(run_id: str, params: dict) -> None:
                 config=config,
                 debug=True,
                 callbacks=[stats_handler],
+                enable_human_review=enable_human_review,
+                human_review_points=human_review_points,
             ),
         )
 
+        # If human review is enabled, recompile the graph with a checkpointer
+        # (interrupt() requires a checkpointer to save/resume state).
+        checkpointer_ctx = None
+        if enable_human_review:
+            checkpointer_ctx = get_checkpointer(
+                config["data_cache_dir"], params["ticker"]
+            )
+            saver = checkpointer_ctx.__enter__()
+            graph.graph = graph.workflow.compile(checkpointer=saver)
+
         start_time = time.time()
 
-        def stream_graph():
-            """Run graph.stream() in this thread, pushing messages to the event loop."""
-            init_state = graph.propagator.create_initial_state(
-                params["ticker"], params["date"],
-                asset_type=params.get("asset_type", "stock"),
-            )
-            args = graph.propagator.get_graph_args()
-
-            trace = []
-            try:
-                for chunk in graph.graph.stream(init_state, **args):
-                    if stop_event.is_set():
-                        asyncio.run_coroutine_threadsafe(
-                            manager.send_error(run_id, "Analysis stopped by user"), loop
-                        )
-                        return
-
-                    trace.append(chunk)
-                    _handle_chunk(
-                        chunk, run_id, selected_analyst_keys, stats_handler,
-                        start_time, agent_statuses, wall_time_tracker, loop
-                    )
-            except Exception as exc:
-                asyncio.run_coroutine_threadsafe(
-                    manager.send_error(run_id, str(exc)), loop
-                )
-                return
-
-            # Merge deltas into final state
-            final_state: dict = {}
-            for c in trace:
-                final_state.update(c)
-
-            # Persist state to disk (same as TradingAgentsGraph._run_graph does).
+        def _finish_run(final_state: dict):
+            """Persist state and send completion — shared by normal and reviewed paths."""
             graph.ticker = params["ticker"]
             graph._log_state(str(params["date"]), final_state)
             graph.memory_log.store_decision(
@@ -158,17 +149,14 @@ async def run_analysis_background(run_id: str, params: dict) -> None:
                 trade_date=str(params["date"]),
                 final_trade_decision=final_state.get("final_trade_decision", ""),
             )
-
             decision = graph.process_signal(final_state.get("final_trade_decision", ""))
-            rating = decision  # process_signal returns the rating string directly
+            rating = decision
 
-            # Mark all agents completed
             for agent in agent_statuses:
                 agent_statuses[agent] = "completed"
                 asyncio.run_coroutine_threadsafe(
                     manager.send_agent_status(run_id, agent, "completed"), loop
                 )
-
             asyncio.run_coroutine_threadsafe(
                 manager.send_completion(
                     run_id,
@@ -180,15 +168,122 @@ async def run_analysis_background(run_id: str, params: dict) -> None:
                 loop,
             )
 
+        def _process_chunks(chunks_iter, trace: list) -> dict | None:
+            """Process stream chunks. Returns interrupt payload dict if interrupt
+            occurred, or None if the stream completed normally."""
+            try:
+                for chunk in chunks_iter:
+                    if stop_event.is_set():
+                        asyncio.run_coroutine_threadsafe(
+                            manager.send_error(run_id, "Analysis stopped by user"), loop
+                        )
+                        return None  # signal: aborted
+
+                    # Detect LangGraph interrupt
+                    if "__interrupt__" in chunk:
+                        interrupts = chunk["__interrupt__"]
+                        interrupt_val = interrupts[0].value if interrupts else {}
+                        # Send to frontend
+                        review_point = interrupt_val.get("review_point", "unknown")
+                        asyncio.run_coroutine_threadsafe(
+                            manager.send_human_review_required(
+                                run_id, review_point,
+                                interrupt_val.get("ticker", params["ticker"]),
+                                interrupt_val,
+                            ), loop
+                        )
+                        # Update run status
+                        _active_runs[run_id]["status"] = "waiting_review"
+                        _active_runs[run_id]["review_point"] = review_point
+
+                        # Block until human submits review
+                        future: concurrent.futures.Future = concurrent.futures.Future()
+                        _review_futures[run_id] = future
+                        try:
+                            response = future.result(timeout=600)  # 10 min timeout
+                        except concurrent.futures.TimeoutError:
+                            # Auto-approve on timeout
+                            response = {"action": "approve", "feedback": ""}
+                        finally:
+                            _review_futures.pop(run_id, None)
+                            _active_runs[run_id]["status"] = "running"
+                            _active_runs[run_id].pop("review_point", None)
+
+                        return response  # signal: interrupt occurred, caller should resume
+
+                    trace.append(chunk)
+                    _handle_chunk(
+                        chunk, run_id, selected_analyst_keys, stats_handler,
+                        start_time, agent_statuses, wall_time_tracker, loop
+                    )
+                return None  # signal: stream completed normally
+            except Exception as exc:
+                asyncio.run_coroutine_threadsafe(
+                    manager.send_error(run_id, str(exc)), loop
+                )
+                return None
+
+        def stream_graph():
+            """Run graph.stream() with interrupt/resume support for human review."""
+            try:
+                init_state = graph.propagator.create_initial_state(
+                    params["ticker"], params["date"],
+                    asset_type=params.get("asset_type", "stock"),
+                )
+                args = graph.propagator.get_graph_args()
+                # Inject thread_id for checkpoint/resume (required for interrupt())
+                if enable_human_review:
+                    tid = thread_id(params["ticker"], str(params["date"]))
+                    args.setdefault("config", {}).setdefault("configurable", {})["thread_id"] = tid
+                trace: list = []
+
+                current_input = init_state
+                while True:
+                    result = _process_chunks(
+                        graph.graph.stream(current_input, **args),
+                        trace,
+                    )
+                    if result is None:
+                        # Stream completed normally — finish
+                        break
+                    # Interrupt occurred — result is the human response dict
+                    feedback = result.get("feedback", "") if isinstance(result, dict) else ""
+                    # Resume with Command
+                    current_input = Command(resume={"action": result.get("action", "approve"), "feedback": feedback})
+
+                # Merge all traced chunks into final state
+                final_state: dict = {}
+                for c in trace:
+                    final_state.update(c)
+
+                if final_state:
+                    _finish_run(final_state)
+                else:
+                    asyncio.run_coroutine_threadsafe(
+                        manager.send_error(run_id, "Analysis completed but produced no state"), loop
+                    )
+            except Exception as exc:
+                asyncio.run_coroutine_threadsafe(
+                    manager.send_error(run_id, f"Analysis thread error: {exc}"), loop
+                )
+            finally:
+                # Clean up checkpointer inside the thread, after graph is truly done
+                if checkpointer_ctx is not None:
+                    try:
+                        checkpointer_ctx.__exit__(None, None, None)
+                    except Exception:
+                        pass
+                # Remove run from active runs only after thread finishes
+                _active_runs.pop(run_id, None)
+
         thread = threading.Thread(target=stream_graph, daemon=True)
         _active_runs[run_id]["thread"] = thread
         thread.start()
 
     except Exception as exc:
         await manager.send_error(run_id, str(exc))
-        raise
-    finally:
         _active_runs.pop(run_id, None)
+        raise
 
 
 def _handle_chunk(
@@ -395,18 +490,37 @@ def get_run_status(run_id: str) -> dict | None:
     run = _active_runs.get(run_id)
     if not run:
         return None
-    return {
+    result = {
         "run_id": run_id,
         "status": run.get("status", "unknown"),
         "params": {k: v for k, v in run.get("params", {}).items() if k not in ("api_key",)},
     }
+    if run.get("review_point"):
+        result["review_point"] = run["review_point"]
+    return result
+
+
+def submit_review(run_id: str, review: dict) -> bool:
+    """Submit human review feedback to resume a paused analysis.
+
+    Called from the API endpoint. Sets the Future that unblocks the daemon thread.
+    """
+    future = _review_futures.get(run_id)
+    if future is None or future.done():
+        return False
+    future.set_result(review)
+    return True
 
 
 def stop_run(run_id: str) -> bool:
-    """Signal a running analysis to stop."""
+    """Signal a running analysis to stop. Also resolves any pending review."""
     run = _active_runs.get(run_id)
     if not run:
         return False
+    # If waiting for review, auto-approve to unblock the thread
+    future = _review_futures.get(run_id)
+    if future and not future.done():
+        future.set_result({"action": "approve", "feedback": "[Auto-approved: analysis stopped by user]"})
     event = run.get("stop_event")
     if event:
         event.set()

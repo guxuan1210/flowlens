@@ -4,12 +4,13 @@ import { api } from '@/api/client'
 import { useAnalysisStore } from '@/store/analysisStore'
 import { ConfigPreview } from '@/components/ui/ConfigPreview'
 import { AgentCardGrid } from '@/components/ui/AgentCardGrid'
+import { HumanReviewPanel } from '@/components/ui/HumanReviewPanel'
 import { PipelineProgress } from '@/components/ui/PipelineProgress'
 import { StatsBar } from '@/components/ui/StatsBar'
 import { RatingBadge } from '@/components/ui/RatingBadge'
 import type { AnalysisParams, AnalysisRunResponse } from '@/types/analysis'
 import type { ProviderInfo, ModelOptions } from '@/types/config'
-import type { WSMessage, AgentStatus } from '@/types/streaming'
+import type { WSMessage, AgentStatus, HumanReviewPayload } from '@/types/streaming'
 import { Play, CheckCircle2, XCircle } from 'lucide-react'
 
 const ANALYST_OPTIONS = [
@@ -82,6 +83,8 @@ export function RunAnalysis() {
   const [language, setLanguage] = useState('English')
   const [providers, setProviders] = useState<ProviderInfo[]>([])
   const [modelOptions, setModelOptions] = useState<ModelOptions | null>(null)
+  const [enableHumanReview, setEnableHumanReview] = useState(false)
+  const [humanReviewPoints, setHumanReviewPoints] = useState(['research_manager', 'portfolio_manager'])
 
   useEffect(() => {
     api.get<ProviderInfo[]>('/models/providers').then(setProviders).catch(() => {})
@@ -138,6 +141,11 @@ export function RunAnalysis() {
         if (timerRef.current) clearInterval(timerRef.current)
         break
       }
+      case 'human_review_required': {
+        const p = msg.payload as HumanReviewPayload
+        store.setHumanReview(p)
+        break
+      }
     }
   }, [store])
 
@@ -146,6 +154,8 @@ export function RunAnalysis() {
       ticker, date, analysts, research_depth: depth,
       llm_provider: provider, quick_think_llm: quickModel, deep_think_llm: deepModel,
       output_language: language, backend_url: null,
+      enable_human_review: enableHumanReview,
+      human_review_points: enableHumanReview ? humanReviewPoints : [],
     }
 
     const result = await api.post<AnalysisRunResponse>('/analysis/run', params)
@@ -334,6 +344,39 @@ export function RunAnalysis() {
               </select>
             </div>
 
+            {/* Human Review Toggle */}
+            <div className="border border-slate-700 rounded-lg p-3 space-y-2">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" checked={enableHumanReview}
+                  onChange={(e) => setEnableHumanReview(e.target.checked)}
+                  className="accent-amber-500" />
+                <div>
+                  <span className="text-sm font-medium">Enable Human Review</span>
+                  <p className="text-xs text-slate-400">Pause at key decision points for approval</p>
+                </div>
+              </label>
+              {enableHumanReview && (
+                <div className="flex gap-4 pl-6">
+                  <label className="flex items-center gap-2 text-xs cursor-pointer">
+                    <input type="checkbox" checked={humanReviewPoints.includes('research_manager')}
+                      onChange={(e) => {
+                        if (e.target.checked) setHumanReviewPoints([...humanReviewPoints, 'research_manager'])
+                        else setHumanReviewPoints(humanReviewPoints.filter((p) => p !== 'research_manager'))
+                      }} className="accent-amber-500" />
+                    Research Manager
+                  </label>
+                  <label className="flex items-center gap-2 text-xs cursor-pointer">
+                    <input type="checkbox" checked={humanReviewPoints.includes('portfolio_manager')}
+                      onChange={(e) => {
+                        if (e.target.checked) setHumanReviewPoints([...humanReviewPoints, 'portfolio_manager'])
+                        else setHumanReviewPoints(humanReviewPoints.filter((p) => p !== 'portfolio_manager'))
+                      }} className="accent-amber-500" />
+                    Portfolio Manager
+                  </label>
+                </div>
+              )}
+            </div>
+
             <button onClick={startAnalysis} disabled={analysts.length === 0}
               className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-sky-500 text-slate-900 rounded-lg hover:bg-sky-400 transition-colors font-medium text-sm disabled:opacity-50">
               <Play className="w-4 h-4" /> Start Analysis
@@ -352,23 +395,32 @@ export function RunAnalysis() {
       {/* Phase B: Streaming */}
       {isRunning && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <PipelineProgress currentStage={(store.pipelineStage || 'analysts') as any} />
-            <span className="text-sm text-slate-400 font-mono">
-              {ticker} · {date}
-            </span>
-          </div>
+          {/* Human Review Panel */}
+          {store.isWaitingForReview && store.humanReview && (
+            <HumanReviewPanel />
+          )}
 
-          <AgentCardGrid agents={buildAgentCards()} />
+          {!store.isWaitingForReview && (
+            <>
+              <div className="flex items-center justify-between">
+                <PipelineProgress currentStage={(store.pipelineStage || 'analysts') as any} />
+                <span className="text-sm text-slate-400 font-mono">
+                  {ticker} · {date}
+                </span>
+              </div>
 
-          <StatsBar
-            llmCalls={store.stats.llm_calls}
-            toolCalls={store.stats.tool_calls}
-            tokensIn={store.stats.tokens_in}
-            tokensOut={store.stats.tokens_out}
-            elapsed={store.stats.elapsed}
-            onStop={stopAnalysis}
-          />
+              <AgentCardGrid agents={buildAgentCards()} />
+
+              <StatsBar
+                llmCalls={store.stats.llm_calls}
+                toolCalls={store.stats.tool_calls}
+                tokensIn={store.stats.tokens_in}
+                tokensOut={store.stats.tokens_out}
+                elapsed={store.stats.elapsed}
+                onStop={stopAnalysis}
+              />
+            </>
+          )}
         </div>
       )}
 

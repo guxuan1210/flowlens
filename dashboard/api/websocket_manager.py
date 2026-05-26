@@ -113,6 +113,14 @@ class ConnectionManager:
     async def send_tool_call(self, run_id: str, tool_name: str, args: dict):
         await self.broadcast(run_id, WSMessageType.TOOL_CALL, {"tool_name": tool_name, "args": str(args)})
 
+    async def send_human_review_required(self, run_id: str, review_point: str, ticker: str, data: dict):
+        """Send human review request to frontend and cache review state."""
+        await self.broadcast(run_id, WSMessageType.HUMAN_REVIEW_REQUIRED, {
+            "review_point": review_point,
+            "ticker": ticker,
+            "data": data,
+        })
+
     def cleanup(self, run_id: str):
         self._connections.pop(run_id, None)
         self._agent_statuses.pop(run_id, None)

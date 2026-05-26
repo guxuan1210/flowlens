@@ -13,6 +13,7 @@ from .y_finance import (
 from .yfinance_news import get_news_yfinance, get_global_news_yfinance
 from .akshare_moneyflow import get_moneyflow, get_sector_fund_flow
 from .akshare_news import get_news_akshare, get_global_news_akshare
+from .eastmoney_news import get_news_eastmoney, get_global_news_eastmoney
 from .alpha_vantage import (
     get_stock as get_alpha_vantage_stock,
     get_indicator as get_alpha_vantage_indicator,
@@ -74,6 +75,7 @@ VENDOR_LIST = [
     "yfinance",
     "alpha_vantage",
     "akshare",
+    "eastmoney",
 ]
 
 # Mapping of methods to their vendor-specific implementations
@@ -110,11 +112,13 @@ VENDOR_METHODS = {
         "alpha_vantage": get_alpha_vantage_news,
         "yfinance": get_news_yfinance,
         "akshare": [get_news_akshare],
+        "eastmoney": [get_news_eastmoney],
     },
     "get_global_news": {
         "yfinance": get_global_news_yfinance,
         "alpha_vantage": get_alpha_vantage_global_news,
         "akshare": [get_global_news_akshare],
+        "eastmoney": [get_global_news_eastmoney],
     },
     "get_insider_transactions": {
         "alpha_vantage": get_alpha_vantage_insider_transactions,

@@ -7,7 +7,7 @@ import * as Switch from '@radix-ui/react-switch'
 import { Save, RotateCcw, ChevronDown, Check } from 'lucide-react'
 
 const LANGUAGES = ['English', 'Chinese', 'Japanese', 'Korean', 'Spanish', 'Portuguese', 'French', 'German', 'Arabic', 'Russian', 'Hindi']
-const VENDORS = ['yfinance', 'alpha_vantage', 'akshare']
+const VENDORS = ['yfinance', 'alpha_vantage', 'akshare', 'eastmoney']
 
 function RadixSelect({ value, onValueChange, options, placeholder }: {
   value: string
@@ -169,11 +169,46 @@ export function Settings() {
               <span className="text-sm text-slate-400">{local.checkpoint_enabled ? 'Enabled' : 'Disabled'}</span>
             </div>
           </div>
+          <div>
+            <label className="text-sm font-medium block mb-1">Human Review</label>
+            <div className="flex items-center gap-3 mt-2">
+              <Switch.Root
+                checked={local.enable_human_review as boolean || false}
+                onCheckedChange={(checked) => setLocal({ ...local, enable_human_review: checked })}
+                className="w-9 h-5 rounded-full bg-slate-700 data-[state=checked]:bg-amber-500 transition-colors relative"
+              >
+                <Switch.Thumb className="block w-4 h-4 rounded-full bg-white translate-x-0.5 data-[state=checked]:translate-x-[18px] transition-transform" />
+              </Switch.Root>
+              <span className="text-sm text-slate-400">{local.enable_human_review ? 'Enabled' : 'Disabled'}</span>
+            </div>
+            {(local.enable_human_review as boolean) && (
+              <div className="flex gap-4 mt-2 ml-1">
+                {['research_manager', 'portfolio_manager'].map((point) => (
+                  <label key={point} className="flex items-center gap-2 text-xs cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={((local.human_review_points as string[]) || []).includes(point)}
+                      onChange={(e) => {
+                        const current = (local.human_review_points as string[]) || []
+                        const next = e.target.checked
+                          ? [...current, point]
+                          : current.filter((p: string) => p !== point)
+                        setLocal({ ...local, human_review_points: next })
+                      }}
+                      className="accent-amber-500"
+                    />
+                    {point === 'research_manager' ? 'Research Manager' : 'Portfolio Manager'}
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
         <button onClick={() => handleSave('analysis', {
           max_debate_rounds: local.max_debate_rounds, max_risk_discuss_rounds: local.max_risk_discuss_rounds,
           analyst_concurrency_limit: local.analyst_concurrency_limit, news_article_limit: local.news_article_limit,
           global_news_lookback_days: local.global_news_lookback_days, checkpoint_enabled: local.checkpoint_enabled,
+          enable_human_review: local.enable_human_review, human_review_points: local.human_review_points,
         })} className="flex items-center gap-2 px-4 py-2 bg-sky-500 text-slate-900 rounded-md text-sm hover:bg-sky-400 transition-colors font-medium">
           <Save className="w-4 h-4" /> {savedSections['analysis'] ? 'Saved!' : 'Save Analysis Settings'}
         </button>

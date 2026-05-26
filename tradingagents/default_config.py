@@ -68,6 +68,11 @@ DEFAULT_CONFIG = _apply_env_overrides({
     # Checkpoint/resume: when True, LangGraph saves state after each node
     # so a crashed run can resume from the last successful step.
     "checkpoint_enabled": False,
+    # Human-in-the-loop review gates. When enabled, the graph pauses after the
+    # Research Manager and/or Portfolio Manager so a human can approve or revise
+    # the AI's decisions before the pipeline continues.
+    "enable_human_review": False,
+    "human_review_points": ["research_manager", "portfolio_manager"],  # which gates to activate
     # Tushare API token for A-share capital flow data (主力资金).
     # Free registration at https://tushare.pro — 120 points/min for basic tier.
     "tushare_token": None,
@@ -106,7 +111,7 @@ DEFAULT_CONFIG = _apply_env_overrides({
         "core_stock_apis": "yfinance",       # Options: alpha_vantage, yfinance
         "technical_indicators": "yfinance",  # Options: alpha_vantage, yfinance
         "fundamental_data": "yfinance",      # Options: alpha_vantage, yfinance
-        "news_data": "yfinance",             # Options: alpha_vantage, yfinance
+        "news_data": "yfinance",             # Options: alpha_vantage, yfinance, akshare, eastmoney
         "capital_flow_data": "akshare",      # Options: akshare
     },
     # Tool-level configuration (takes precedence over category-level)

@@ -18,6 +18,7 @@ class WSMessageType(str, Enum):
     COMPLETION = "completion"
     ERROR = "error"
     PIPELINE_STAGE = "pipeline_stage"
+    HUMAN_REVIEW_REQUIRED = "human_review_required"
 
 
 class AgentStatus(str, Enum):
@@ -55,6 +56,12 @@ class CompletionPayload(BaseModel):
 class ErrorPayload(BaseModel):
     message: str
     agent: Optional[str] = None
+
+
+class HumanReviewPayload(BaseModel):
+    review_point: str  # "research_manager" | "portfolio_manager"
+    ticker: str
+    data: dict  # the interrupt payload from the node
 
 
 class WSMessage(BaseModel):
