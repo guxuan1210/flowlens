@@ -153,8 +153,8 @@ FlowLens 对中国市场有一等支持，远不止表面的新闻翻译。
 ### 安装
 
 ```bash
-git clone https://github.com/TauricResearch/TradingAgents.git
-cd TradingAgents
+git clone https://github.com/guxuan1210/flowlens.git
+cd flowlens
 ```
 
 创建虚拟环境：
