@@ -142,11 +142,16 @@ async def run_analysis_background(run_id: str, params: dict) -> None:
 
         def _finish_run(final_state: dict):
             """Persist state and send completion — shared by normal and reviewed paths."""
+            print(f"[_finish_run] START ticker={params['ticker']} date={params['date']}", flush=True)
+            print(f"[_finish_run] final_state keys: {sorted(final_state.keys())}", flush=True)
             graph.ticker = params["ticker"]
             try:
                 graph._log_state(str(params["date"]), final_state)
+                print(f"[_finish_run] _log_state OK for {params['ticker']}", flush=True)
             except Exception as exc:
-                print(f"[_finish_run] _log_state failed: {exc}", flush=True)
+                import traceback
+                print(f"[_finish_run] _log_state FAILED: {exc}", flush=True)
+                traceback.print_exc()
                 asyncio.run_coroutine_threadsafe(
                     manager.send_error(run_id, f"Failed to save state log: {exc}"), loop
                 )
@@ -258,9 +263,12 @@ async def run_analysis_background(run_id: str, params: dict) -> None:
                     current_input = Command(resume={"action": result.get("action", "approve"), "feedback": feedback})
 
                 # Merge all traced chunks into final state
+                print(f"[stream_graph] Merging {len(trace)} chunks", flush=True)
                 final_state: dict = {}
                 for c in trace:
                     final_state.update(c)
+                print(f"[stream_graph] final_state keys: {sorted(final_state.keys())}", flush=True)
+                print(f"[stream_graph] has final_trade_decision: {'final_trade_decision' in final_state}", flush=True)
 
                 if final_state:
                     _finish_run(final_state)
